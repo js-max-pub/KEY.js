@@ -1,4 +1,5 @@
 KEYJS = {
+	actions: {},
 	pressed: [],
 	commandKeys: {
 		8: 'backspace',
@@ -20,37 +21,60 @@ KEYJS = {
 		if (KEYJS.commandKeys[n]) return KEYJS.commandKeys[n]
 		else return String.fromCharCode(n).trim().toLowerCase();
 	},
-
-	actions: {},
+	register: function(keys, callback) {
+		keys = keys.split(' ').sort().join(' ');
+		console.log("KEY.js register:", keys);
+		KEYJS.actions[keys] = callback;
+	},
 	act: function() {
 		var f = KEYJS.actions[KEYJS.pressed.sort().join(' ')];
 		// console.log('act', f, KEYJS.pressed.sort().join(' '));
 		if (f) console.log('KEY.js action:', KEYJS.pressed.sort().join(' '));
 		if (f) f();
+	},
+	keydown: function(event) {
+		var key = KEYJS.keyName(event.which);
+		if (KEYJS.pressed.indexOf(key) > -1) return;
+		KEYJS.pressed.push(key);
+		KEYJS.act();
+	},
+	keyup: function(event) {
+		var key = KEYJS.keyName(event.which);
+		var index = KEYJS.pressed.indexOf(key);
+		if (index > -1)
+			KEYJS.pressed.splice(index, 1);
 	}
 };
 
-document.addEventListener('keydown', function(ev) {
-	var key = KEYJS.keyName(ev.which);
-	if (KEYJS.pressed.indexOf(key) != -1) return;
-	KEYJS.pressed.push(key);
-	// console.log('KEY.js pressed:', KEYJS.pressed);
-	KEYJS.act();
-});
-document.addEventListener('keyup', function(ev) {
-	var key = KEYJS.keyName(ev.which);
-	var index = KEYJS.pressed.indexOf(key);
-	if (index > -1)
-		KEYJS.pressed.splice(index, 1);
-	// console.log('KEY.js pressed:', KEYJS.pressed);
-});
+document.addEventListener('keydown', KEYJS.keydown);
+document.addEventListener('keyup', KEYJS.keyup);
+KEY = KEYJS.register;
 
-KEY = function(keys, callback) {
-	keys = keys.split(' ').sort().join(' ');
-	return {
-		then: function(callback) {
-			console.log("KEY.js register:", keys);
-			KEYJS.actions[keys] = callback;
-		}
-	};
-}
+
+
+// KEY = function(keys, callback) {
+// 	keys = keys.split(' ').sort().join(' ');
+// 	return {
+// 		then: function(callback) {
+// 			console.log("KEY.js register:", keys);
+// 			KEYJS.actions[keys] = callback;
+// 		}
+// 	};
+// }
+
+
+
+// document.addEventListener('keydown', function(ev) {
+// 	var key = KEYJS.keyName(ev.which);
+// 	if (KEYJS.pressed.indexOf(key) != -1) return;
+// 	KEYJS.pressed.push(key);
+// 	// console.log('KEY.js pressed:', KEYJS.pressed);
+// 	KEYJS.act();
+// });
+// document.addEventListener('keyup', function(ev) {
+// 	var key = KEYJS.keyName(ev.which);
+// 	var index = KEYJS.pressed.indexOf(key);
+// 	if (index > -1)
+// 		KEYJS.pressed.splice(index, 1);
+// 	// console.log('KEY.js pressed:', KEYJS.pressed);
+// });
